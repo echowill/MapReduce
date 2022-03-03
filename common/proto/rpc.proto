@@ -6,6 +6,8 @@ service Worker {
   rpc Reduce (ReduceInfo) returns(Result); // 用于master节点向reduce节点派发任务
   rpc End(Empty) returns (Empty); // 用于worker节点向master回应任务完成
   rpc Health(Empty) returns (WorkerState); // 用于master检测worker的存活状态
+  rpc TaskState(TaskUpdate) returns (Result); //用于map/reduce向master同步任务进度，或者master向map/reduce传递节点信息
+  rpc WorkerRegister(WorkerInfo) returns (RegisterResult); // 用于worker向master注册，此处worker包括了map和reduce
 }
 
 // 用于心跳检测
@@ -21,7 +23,7 @@ message Empty {
       2.此时返回的数据内容为超出预警的传感器名，dataContent为超出的具体数值，如果未出现异常值，此时dataName为空
  */
 message Result {
-  string uuid = 1; // 返回节点的uuid，次id由master节点生成
+  string uuid = 1; // 返回节点的uuid，次id由发送节点生成
   repeated string dataName = 2;
   repeated string dataContent = 3;
 }
@@ -46,4 +48,23 @@ message WorkerState {
     BUSY = 1;
   }
   State state = 1;
+}
+
+message WorkerInfo {
+    string uuid  = 1;
+    string ip    = 2;
+    bool   isMap = 3;
+}
+
+// 用于worker向master注册服务
+message RegisterResult {
+  bool result = 1;
+  int64  id = 2;
+}
+
+// 用于master向reduce节点更新规则
+message TaskUpdate {
+  string uuid      = 1;
+  string taskId    = 2;
+  bool   taskState = 3;
 }

@@ -22,6 +22,8 @@ type WorkerClient interface {
 	Reduce(ctx context.Context, in *ReduceInfo, opts ...grpc.CallOption) (*Result, error)
 	End(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*Empty, error)
 	Health(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*WorkerState, error)
+	TaskState(ctx context.Context, in *TaskUpdate, opts ...grpc.CallOption) (*Result, error)
+	WorkerRegister(ctx context.Context, in *WorkerInfo, opts ...grpc.CallOption) (*RegisterResult, error)
 }
 
 type workerClient struct {
@@ -68,6 +70,24 @@ func (c *workerClient) Health(ctx context.Context, in *Empty, opts ...grpc.CallO
 	return out, nil
 }
 
+func (c *workerClient) TaskState(ctx context.Context, in *TaskUpdate, opts ...grpc.CallOption) (*Result, error) {
+	out := new(Result)
+	err := c.cc.Invoke(ctx, "/Worker/TaskState", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *workerClient) WorkerRegister(ctx context.Context, in *WorkerInfo, opts ...grpc.CallOption) (*RegisterResult, error) {
+	out := new(RegisterResult)
+	err := c.cc.Invoke(ctx, "/Worker/WorkerRegister", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // WorkerServer is the server API for Worker service.
 // All implementations must embed UnimplementedWorkerServer
 // for forward compatibility
@@ -76,6 +96,8 @@ type WorkerServer interface {
 	Reduce(context.Context, *ReduceInfo) (*Result, error)
 	End(context.Context, *Empty) (*Empty, error)
 	Health(context.Context, *Empty) (*WorkerState, error)
+	TaskState(context.Context, *TaskUpdate) (*Result, error)
+	WorkerRegister(context.Context, *WorkerInfo) (*RegisterResult, error)
 	mustEmbedUnimplementedWorkerServer()
 }
 
@@ -94,6 +116,12 @@ func (UnimplementedWorkerServer) End(context.Context, *Empty) (*Empty, error) {
 }
 func (UnimplementedWorkerServer) Health(context.Context, *Empty) (*WorkerState, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Health not implemented")
+}
+func (UnimplementedWorkerServer) TaskState(context.Context, *TaskUpdate) (*Result, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method TaskState not implemented")
+}
+func (UnimplementedWorkerServer) WorkerRegister(context.Context, *WorkerInfo) (*RegisterResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method WorkerRegister not implemented")
 }
 func (UnimplementedWorkerServer) mustEmbedUnimplementedWorkerServer() {}
 
@@ -180,6 +208,42 @@ func _Worker_Health_Handler(srv interface{}, ctx context.Context, dec func(inter
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Worker_TaskState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(TaskUpdate)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).TaskState(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Worker/TaskState",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).TaskState(ctx, req.(*TaskUpdate))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Worker_WorkerRegister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(WorkerInfo)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(WorkerServer).WorkerRegister(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Worker/WorkerRegister",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(WorkerServer).WorkerRegister(ctx, req.(*WorkerInfo))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Worker_ServiceDesc is the grpc.ServiceDesc for Worker service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -202,6 +266,14 @@ var Worker_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Health",
 			Handler:    _Worker_Health_Handler,
+		},
+		{
+			MethodName: "TaskState",
+			Handler:    _Worker_TaskState_Handler,
+		},
+		{
+			MethodName: "WorkerRegister",
+			Handler:    _Worker_WorkerRegister_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
