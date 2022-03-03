@@ -43,8 +43,8 @@ func (ms *Master) WaitForEnoughWorker() {
 			ms.WorkerNums.TotalReduceNums > ms.WorkerNums.ReduceMinNums {
 			break
 		}
-		logrus.Info("[master] time is %s,map num is %s,reduce num is %s", time.Now().String(), ms.WorkerNums.TotalMapNums, ms.WorkerNums.ReduceMinNums)
-		time.Sleep(100)
+		//fmt.Printf("[master] time is %s,map num is %s,reduce num is %s", time.Now().String(), ms.WorkerNums.TotalMapNums, ms.WorkerNums.ReduceMinNums)
+		time.Sleep(1000)
 		ms.mux.Unlock()
 	}
 }
