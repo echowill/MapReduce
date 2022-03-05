@@ -1,0 +1,18 @@
+syntax = "proto3";
+option go_package = "./;rpc";
+
+/* TODO : 这个是master链接application所需要用到函数
+
+ */
+service APP {
+    rpc MapReduceResult(MRResult) returns (MREmpty);
+}
+
+message MRResult {
+    string address = 1;
+    repeated string res = 2;
+}
+
+message MREmpty {
+    string  rpcRes = 1;
+}

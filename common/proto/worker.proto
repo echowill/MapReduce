@@ -1,0 +1,21 @@
+syntax = "proto3";
+option go_package = "./;rpc";
+
+/* TODO : 这个是master连接map和reduce所需要用到的函数
+
+ */
+
+service Worker {
+    rpc Map(TaskInfo)       returns(WEmpty);
+    rpc Reduce(TaskInfo)    returns(WEmpty);
+}
+
+message TaskInfo {
+    string uuid    = 1;
+    string task    = 2; // worker内置任务类型，此处task只做变更处理
+    string address = 3;
+}
+
+message WEmpty {
+    string rpcRes = 1;
+}

@@ -1,0 +1,44 @@
+syntax = "proto3";
+option go_package = "./;rpc";
+
+/* TODO : 这个是application，map，reduce节点链接master是所需要用的函数
+
+ */
+service Master {
+    rpc WorkerRegister(WorkerInfo) returns (RegisterResult);    // 用于worker向master注册，此处worker包括了map和reduce
+    rpc Health(WorkerState)        returns (Empty);             // 用于master检测worker的存活状态,同时作为keepAlive使用
+    rpc Map (Result)               returns (Empty);             // 用于map节点向master节点汇报任务情况
+    rpc Reduce (Result)            returns (Empty);             // 用于reduce节点向master节点汇报任务情况
+    rpc APP (DataAddress)          returns (Empty);             // 用于application向master节点更新任务地址
+}
+
+message Empty {
+    string rpcRes = 1; // successful,retry,error
+}
+
+message Result {
+    string            uuid = 1;
+    repeated string result = 2;
+}
+
+message WorkerInfo {
+    string uuid  = 1;
+    string ip    = 2;
+    bool   isMap = 3;
+}
+
+message RegisterResult {
+    bool result = 1;
+    int64    id = 2;
+}
+
+message WorkerState {
+    int32 state  = 1;
+    string uuid  = 2;
+    bool isMap = 3;
+}
+
+message DataAddress {
+    string address   = 1; // ip:port/bucket
+    string dataRange = 2; // Light 800 - 1000
+}
