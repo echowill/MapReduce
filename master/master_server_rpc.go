@@ -58,12 +58,13 @@ func (ms *Master) APP(ctx context.Context, in *rpc.DataAddress) (*rpc.Empty, err
 
 /*
 	TODO : 需要补充map节点调用map函数的内容
+ 		   1. 此处应写入Reduce专用bucket/file,等reduce调用读取该file
 */
 func (ms *Master) Map(ctx context.Context, in *rpc.Result) (*rpc.Empty, error) {
 	empty := &rpc.Empty{
 		RpcRes: string("successful"),
 	}
-
+	// TODO : 文件传入ceph , 记录目的地址 ip:port/bucket/fileName,写入ReduceTask
 	return empty, nil
 }
 
@@ -74,6 +75,10 @@ func (ms *Master) Reduce(ctx context.Context, in *rpc.Result) (*rpc.Empty, error
 	empty := &rpc.Empty{
 		RpcRes: string("successful"),
 	}
+
+	toAppMRResult(ms.appIp, in.Address, in.Result) // 更新到app
+
+	// TODO : 更新到s3 指定bucket
 
 	return empty, nil
 }

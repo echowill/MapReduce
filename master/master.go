@@ -17,6 +17,7 @@ type Master struct {
 	enoughWorker chan bool
 	crashChan    chan bool
 	mux          sync.Mutex
+	appIp        string
 	rpc.UnimplementedMasterServer
 }
 
@@ -42,7 +43,7 @@ func NewWorker(uuid string, ip string) common.WorkerInfo {
 	}
 }
 
-// TODO : s3 get object list, IP = ip:port/bucket
+// TODO : SimpleStorageService get object list, IP = ip:port/bucket
 func getTaskList(ip string) (res []string, err error) {
 
 	return res, err

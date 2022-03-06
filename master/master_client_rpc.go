@@ -47,3 +47,28 @@ func toWorkerReduce(workerIp string, task *rpc.TaskInfo) (*rpc.WEmpty, error) {
 	}
 	return r, nil
 }
+
+func toAppMRResult(appIp, srcIp string, res []string) (*rpc.MREmpty, error) {
+	conn, err := grpc.Dial(appIp, grpc.WithInsecure())
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+	c := rpc.NewAPPClient(conn)
+	defer conn.Close()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+	defer cancel()
+
+	output := rpc.MRResult{
+		Res:     res,
+		Address: srcIp,
+	}
+
+	r, err := c.MapReduceResult(ctx, &output)
+	if err != nil {
+		logrus.Error(err)
+		return nil, err
+	}
+	return r, nil
+}
