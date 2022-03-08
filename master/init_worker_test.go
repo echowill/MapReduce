@@ -14,6 +14,7 @@ func TestMaster(t *testing.T) {
 		return
 	}
 	ms := NewMaster(10, 2)
+
 	baseServer := grpc.NewServer()
 	rpc.RegisterWorkerServer(baseServer, ms)
 	go baseServer.Serve(listener)

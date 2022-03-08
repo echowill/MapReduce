@@ -145,7 +145,7 @@ func DownloadBucket(dir, bucket string, sess *session.Session) bool {
 }
 
 func DeleteBucketContent(bucket string, sess *session.Session) bool {
-	cfg := GetDefaultConfig()
+	cfg := GetDefaultS3Config()
 	objs := GetObjectList(cfg.GetDefaultS3Session(), bucket)
 	for _, it := range objs {
 		if DeleteObject(bucket, it, sess) == false {

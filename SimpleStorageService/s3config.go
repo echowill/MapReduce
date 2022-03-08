@@ -17,8 +17,8 @@ type Config struct {
 	S3ForcePathStyle bool   `json:"S3ForcePathStyle"`
 }
 
-func GetDefaultConfig() (cfg Config) {
-	data, err := ioutil.ReadFile("./config.json")
+func GetDefaultS3Config() (cfg Config) {
+	data, err := ioutil.ReadFile("./s3config.json")
 	if err != nil {
 		fmt.Println("Read json failed,error code is ", err)
 		panic(err)
