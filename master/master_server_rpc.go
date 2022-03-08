@@ -78,7 +78,7 @@ func (ms *Master) Reduce(ctx context.Context, in *rpc.Result) (*rpc.Empty, error
 
 	toAppMRResult(ms.appIp, in.Address, in.Result) // 更新到app
 
-	// TODO : 更新到s3 指定bucket
+	// 暂时不更新此 TODO : 更新到s3 指定bucket,
 
 	return empty, nil
 }
