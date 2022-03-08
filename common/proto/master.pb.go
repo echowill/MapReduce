@@ -73,7 +73,7 @@ type Result struct {
 	unknownFields protoimpl.UnknownFields
 
 	Uuid    string   `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
-	Result  []string `protobuf:"bytes,2,rep,name=result,proto3" json:"result,omitempty"`
+	Result  []string `protobuf:"bytes,2,rep,name=result,proto3" json:"result,omitempty"` // 里面可能有多个传感器
 	Address string   `protobuf:"bytes,3,opt,name=address,proto3" json:"address,omitempty"`
 }
 

@@ -69,6 +69,7 @@ func (ms *Master) Map(ctx context.Context, in *rpc.Result) (*rpc.Empty, error) {
 	task := resultToTaskInfo(in)
 
 	ms.mux.Lock()
+
 	ms.ReduceTasks.PushBack(task) // pushback的一定不是指针
 	for _, it := range ms.ReduceWorker {
 		if checkWorkerIsIdle(it) == true { // if reduce worker is idle
@@ -76,6 +77,7 @@ func (ms *Master) Map(ctx context.Context, in *rpc.Result) (*rpc.Empty, error) {
 			ms.WorkQueue["R"+it.UUID] = it      // 由reduce 队列转到worker队列
 		}
 	}
+
 	ms.mux.Unlock()
 
 	return empty, nil

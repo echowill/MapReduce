@@ -8,6 +8,7 @@ import (
 )
 
 /*
+	弃用，改用AssignWorks
 	TaskDispatch TODO : Map任务列表非空且map worker列表存在空闲worker时，会触发map任务派发，reduce同理
 				 1. 需要定期检测task列表以及worker列表		ok
   				 2. 向worker派发任务 						ok

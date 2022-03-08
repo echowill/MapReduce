@@ -18,8 +18,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type WorkerClient interface {
-	Map(ctx context.Context, in *TaskInfo, opts ...grpc.CallOption) (*WEmpty, error)
-	Reduce(ctx context.Context, in *TaskInfo, opts ...grpc.CallOption) (*WEmpty, error)
+	Map(ctx context.Context, in *TaskInfo, opts ...grpc.CallOption) (*WResult, error)
+	Reduce(ctx context.Context, in *TaskInfo, opts ...grpc.CallOption) (*WResult, error)
 }
 
 type workerClient struct {
@@ -30,8 +30,8 @@ func NewWorkerClient(cc grpc.ClientConnInterface) WorkerClient {
 	return &workerClient{cc}
 }
 
-func (c *workerClient) Map(ctx context.Context, in *TaskInfo, opts ...grpc.CallOption) (*WEmpty, error) {
-	out := new(WEmpty)
+func (c *workerClient) Map(ctx context.Context, in *TaskInfo, opts ...grpc.CallOption) (*WResult, error) {
+	out := new(WResult)
 	err := c.cc.Invoke(ctx, "/Worker/Map", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -39,8 +39,8 @@ func (c *workerClient) Map(ctx context.Context, in *TaskInfo, opts ...grpc.CallO
 	return out, nil
 }
 
-func (c *workerClient) Reduce(ctx context.Context, in *TaskInfo, opts ...grpc.CallOption) (*WEmpty, error) {
-	out := new(WEmpty)
+func (c *workerClient) Reduce(ctx context.Context, in *TaskInfo, opts ...grpc.CallOption) (*WResult, error) {
+	out := new(WResult)
 	err := c.cc.Invoke(ctx, "/Worker/Reduce", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -52,8 +52,8 @@ func (c *workerClient) Reduce(ctx context.Context, in *TaskInfo, opts ...grpc.Ca
 // All implementations must embed UnimplementedWorkerServer
 // for forward compatibility
 type WorkerServer interface {
-	Map(context.Context, *TaskInfo) (*WEmpty, error)
-	Reduce(context.Context, *TaskInfo) (*WEmpty, error)
+	Map(context.Context, *TaskInfo) (*WResult, error)
+	Reduce(context.Context, *TaskInfo) (*WResult, error)
 	mustEmbedUnimplementedWorkerServer()
 }
 
@@ -61,10 +61,10 @@ type WorkerServer interface {
 type UnimplementedWorkerServer struct {
 }
 
-func (UnimplementedWorkerServer) Map(context.Context, *TaskInfo) (*WEmpty, error) {
+func (UnimplementedWorkerServer) Map(context.Context, *TaskInfo) (*WResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Map not implemented")
 }
-func (UnimplementedWorkerServer) Reduce(context.Context, *TaskInfo) (*WEmpty, error) {
+func (UnimplementedWorkerServer) Reduce(context.Context, *TaskInfo) (*WResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Reduce not implemented")
 }
 func (UnimplementedWorkerServer) mustEmbedUnimplementedWorkerServer() {}

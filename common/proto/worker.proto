@@ -6,8 +6,8 @@ option go_package = "./;rpc";
  */
 
 service Worker {
-    rpc Map(TaskInfo)       returns(WEmpty);
-    rpc Reduce(TaskInfo)    returns(WEmpty);
+    rpc Map(TaskInfo)       returns(WResult);
+    rpc Reduce(TaskInfo)    returns(WResult);
 }
 
 message TaskInfo {
@@ -16,6 +16,7 @@ message TaskInfo {
     string address = 3;
 }
 
-message WEmpty {
-    string rpcRes = 1;
+message WResult {
+    string ip = 1;
+    string rpcRes = 2;
 }

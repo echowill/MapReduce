@@ -14,5 +14,5 @@ message MRResult {
 }
 
 message MREmpty {
-    string  rpcRes = 1;
+    repeated string  rpcRes = 1;
 }
