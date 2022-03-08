@@ -1,6 +1,7 @@
 package master
 
 import (
+	"MapReduce/common"
 	rpc "MapReduce/common/proto"
 	"context"
 	"github.com/google/uuid"
@@ -64,7 +65,19 @@ func (ms *Master) Map(ctx context.Context, in *rpc.Result) (*rpc.Empty, error) {
 	empty := &rpc.Empty{
 		RpcRes: string("successful"),
 	}
-	// TODO : 文件传入ceph , 记录目的地址 ip:port/bucket/fileName,写入ReduceTask
+
+	task := resultToTaskInfo(in)
+
+	ms.mux.Lock()
+	ms.ReduceTasks.PushBack(task) // pushback的一定不是指针
+	for _, it := range ms.ReduceWorker {
+		if checkWorkerIsIdle(it) == true { // if reduce worker is idle
+			it.WorkerState = common.WORKER_BUSY // 领到新到任务，状态转为busy
+			ms.WorkQueue["R"+it.UUID] = it      // 由reduce 队列转到worker队列
+		}
+	}
+	ms.mux.Unlock()
+
 	return empty, nil
 }
 
@@ -76,9 +89,9 @@ func (ms *Master) Reduce(ctx context.Context, in *rpc.Result) (*rpc.Empty, error
 		RpcRes: string("successful"),
 	}
 
-	toAppMRResult(ms.appIp, in.Address, in.Result) // 更新到app
+	toAppMRResult(ms.appIp, in.Address, in.Result) // 更新到app,此时reduce会等着master将结果写入app才会返回
 
-	// 暂时不更新此 TODO : 更新到s3 指定bucket,
+	// 暂时不更新此 TODO : 结果更新到s3 指定bucket,
 
 	return empty, nil
 }
@@ -90,6 +103,7 @@ func (ms *Master) Health(ctx context.Context, in *rpc.WorkerState) (*rpc.Empty, 
 	empty := &rpc.Empty{
 		RpcRes: string("successful"),
 	}
+
 	ms.mux.Lock()
 	if in.IsMap == true {
 		value, ok := ms.MapWorker[in.Uuid]
@@ -105,5 +119,6 @@ func (ms *Master) Health(ctx context.Context, in *rpc.WorkerState) (*rpc.Empty, 
 		}
 	}
 	ms.mux.Unlock()
+
 	return empty, nil
 }

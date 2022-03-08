@@ -18,7 +18,7 @@ message Empty {
 
 message Result {
     string            uuid = 1;
-    repeated string result = 2;
+    repeated string result = 2; // 里面可能有多个传感器
     string         address = 3;
 }
 
