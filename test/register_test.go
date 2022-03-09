@@ -1,12 +1,11 @@
 package test
 
 import (
-	"MapReduce/SimpleStorageService"
 	"testing"
 )
 
 /*
-	TODO : 待重做
+	TODO : 已变更至s3_test.go
 */
 func TestRegister(t *testing.T) {
 	//var wg sync.WaitGroup
@@ -58,5 +57,5 @@ func TestRegister(t *testing.T) {
 }
 
 func TestS3Client(t *testing.T) {
-	SimpleStorageService.S3test()
+
 }

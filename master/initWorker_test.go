@@ -11,7 +11,7 @@ import (
 
 func TestMaster(t *testing.T) {
 	var wg sync.WaitGroup
-	listener, err := net.Listen("tcp", "10086")
+	listener, err := net.Listen("tcp", "127.0.0.1:10086")
 	if err != nil {
 		t.Errorf("create listener error,code is %s \n", err)
 		return

@@ -4,6 +4,7 @@ import (
 	"MapReduce/common"
 	rpc "MapReduce/common/proto"
 	"context"
+	"fmt"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -38,7 +39,7 @@ func (ms *Master) APP(ctx context.Context, in *rpc.DataAddress) (*rpc.Empty, err
 	}
 	tasks, tErr := getTaskList(in.Address)
 	if tErr != nil {
-		logrus.Error("get object list error,code is %s", tErr)
+		fmt.Println("get object list error,code is ", tErr)
 		empty.RpcRes = "get object list error"
 		return empty, tErr
 	}
