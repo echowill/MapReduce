@@ -111,12 +111,18 @@ func (ms *Master) Health(ctx context.Context, in *rpc.WorkerState) (*rpc.Empty, 
 	if in.IsMap == true {
 		value, ok := ms.MapWorker[in.Uuid]
 		if ok {
+			if value.WorkerState == common.WORKER_UNKNOWN {
+				empty.RpcRes = "WORKER_UNKNOWN"
+			}
 			value.WorkerState = int(in.State)
 			ms.MapWorker[in.Uuid] = value
 		}
 	} else {
 		value, ok := ms.ReduceWorker[in.Uuid]
 		if ok {
+			if value.WorkerState == common.WORKER_UNKNOWN {
+				empty.RpcRes = "WORKER_UNKNOWN"
+			}
 			value.WorkerState = int(in.State)
 			ms.ReduceWorker[in.Uuid] = value
 		}

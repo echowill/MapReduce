@@ -51,5 +51,10 @@ func TestMaster(t *testing.T) {
 		}
 		wg.Done()
 	}()
+	go func() {
+		wg.Add(1)
+		ms.remakeWorkerState(100) // 每隔100秒重写一次worker状态为unknown
+		wg.Done()
+	}()
 	wg.Wait()
 }

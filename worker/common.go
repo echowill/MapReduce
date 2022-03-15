@@ -17,7 +17,8 @@ import (
 	"time"
 )
 
-/* TODO : 一个worker的启动流程大致分为如下步骤
+/*
+TODO : 一个worker的启动流程大致分为如下步骤
 1. 读取worker.json获取默认配置,里面至少包含master的默认ip
 2. 启动workerServer，由于一台机器上可能有多个workerServer，因此port需要提起协商
 3. 启动MasterClient，向MasterServer注册，此时注册的port为workerServer的port，
@@ -37,9 +38,9 @@ type Worker struct {
 	WorkerIp      string `json:"WorkerIp"`
 	mux           sync.Mutex
 	tasks         list.List
-	dataCache     []byte
+	dataCache     []string
 	deliverList   list.List
-
+	bucketName    string `json:"Bucket"`
 	rpc.UnimplementedWorkerServer
 }
 
@@ -137,6 +138,9 @@ func (wr *Worker) Health() bool {
 		health.IsMap = false
 	}
 	r, err := c.Health(ctx, health)
+	if err != nil {
+		return false
+	}
 	if r.RpcRes == "WORKER_UNKNOWN" { //如果发现状态被标记成unknown，再次发送健康请求
 		return wr.Health()
 	}

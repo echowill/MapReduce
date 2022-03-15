@@ -21,7 +21,7 @@ type MasterClient interface {
 	WorkerRegister(ctx context.Context, in *WorkerInfo, opts ...grpc.CallOption) (*RegisterResult, error)
 	Health(ctx context.Context, in *WorkerState, opts ...grpc.CallOption) (*Empty, error)
 	Map(ctx context.Context, in *Result, opts ...grpc.CallOption) (*Empty, error)
-	Reduce(ctx context.Context, in *Result, opts ...grpc.CallOption) (*Empty, error)
+	Reduce(ctx context.Context, in *ReduceResult, opts ...grpc.CallOption) (*Empty, error)
 	APP(ctx context.Context, in *DataAddress, opts ...grpc.CallOption) (*Empty, error)
 }
 
@@ -60,7 +60,7 @@ func (c *masterClient) Map(ctx context.Context, in *Result, opts ...grpc.CallOpt
 	return out, nil
 }
 
-func (c *masterClient) Reduce(ctx context.Context, in *Result, opts ...grpc.CallOption) (*Empty, error) {
+func (c *masterClient) Reduce(ctx context.Context, in *ReduceResult, opts ...grpc.CallOption) (*Empty, error) {
 	out := new(Empty)
 	err := c.cc.Invoke(ctx, "/Master/Reduce", in, out, opts...)
 	if err != nil {
@@ -85,7 +85,7 @@ type MasterServer interface {
 	WorkerRegister(context.Context, *WorkerInfo) (*RegisterResult, error)
 	Health(context.Context, *WorkerState) (*Empty, error)
 	Map(context.Context, *Result) (*Empty, error)
-	Reduce(context.Context, *Result) (*Empty, error)
+	Reduce(context.Context, *ReduceResult) (*Empty, error)
 	APP(context.Context, *DataAddress) (*Empty, error)
 	mustEmbedUnimplementedMasterServer()
 }
@@ -103,7 +103,7 @@ func (UnimplementedMasterServer) Health(context.Context, *WorkerState) (*Empty, 
 func (UnimplementedMasterServer) Map(context.Context, *Result) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Map not implemented")
 }
-func (UnimplementedMasterServer) Reduce(context.Context, *Result) (*Empty, error) {
+func (UnimplementedMasterServer) Reduce(context.Context, *ReduceResult) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Reduce not implemented")
 }
 func (UnimplementedMasterServer) APP(context.Context, *DataAddress) (*Empty, error) {
@@ -177,7 +177,7 @@ func _Master_Map_Handler(srv interface{}, ctx context.Context, dec func(interfac
 }
 
 func _Master_Reduce_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(Result)
+	in := new(ReduceResult)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -189,7 +189,7 @@ func _Master_Reduce_Handler(srv interface{}, ctx context.Context, dec func(inter
 		FullMethod: "/Master/Reduce",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(MasterServer).Reduce(ctx, req.(*Result))
+		return srv.(MasterServer).Reduce(ctx, req.(*ReduceResult))
 	}
 	return interceptor(ctx, in, info, handler)
 }

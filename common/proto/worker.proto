@@ -20,3 +20,4 @@ message WResult {
     string ip = 1;
     string rpcRes = 2;
 }
+

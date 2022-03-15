@@ -1,11 +1,13 @@
 package SimpleStorageService
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
@@ -81,6 +83,24 @@ func UploadObject(bucket, object, filePath string, sess *session.Session) bool {
 	return true
 }
 
+func UploadObjectFromRAM(bucket, object string, content []string, sess *session.Session) bool {
+	svc := s3.New(sess)
+	var raw bytes.Reader
+	for _, it := range content {
+		raw.Read([]byte(it))
+	}
+	input := &s3.PutObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(object),
+		Body:   &raw,
+	}
+	_, err := svc.PutObject(input)
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func DownloadObject(bucket, object, filePath string, sess *session.Session) bool {
 	downloader := s3manager.NewDownloader(sess)
 	f, err := os.Create(filePath)
@@ -98,6 +118,20 @@ func DownloadObject(bucket, object, filePath string, sess *session.Session) bool
 		return false
 	}
 	return true
+}
+
+func DownloadObjectToRAM(bucket, object string, sess *session.Session) (*io.ReadCloser, error) {
+	svc := s3.New(sess)
+	input := &s3.GetObjectInput{
+		Bucket: aws.String(bucket),
+		Key:    aws.String(object),
+	}
+	result, err := svc.GetObject(input)
+	if err != nil {
+		fmt.Printf("download object error ,code is %s", err)
+		return nil, err
+	}
+	return &result.Body, nil
 }
 
 func DeleteObject(bucket, object string, sess *session.Session) bool {
