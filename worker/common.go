@@ -1,6 +1,7 @@
 package worker
 
 import (
+	"MapReduce/SimpleStorageService"
 	"MapReduce/common"
 	rpc "MapReduce/common/proto"
 	"container/list"
@@ -10,9 +11,11 @@ import (
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"io"
 	"io/ioutil"
 	"net"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 )
@@ -42,6 +45,38 @@ type Worker struct {
 	deliverList   list.List
 	bucketName    string `json:"Bucket"`
 	rpc.UnimplementedWorkerServer
+}
+
+func (wr *Worker) Map(ctx context.Context, in *rpc.TaskInfo) (*rpc.WResult, error) {
+	task := *in
+	res := &rpc.WResult{}
+	wr.mux.Lock()
+	old := wr.tasks.Len()
+	wr.tasks.PushBack(task)
+	now := wr.tasks.Len()
+	if now-old == 1 {
+		res.RpcRes = "successful"
+	} else {
+		res.RpcRes = "failed"
+	}
+	wr.mux.Unlock()
+	return res, nil
+}
+
+func (wr *Worker) Reduce(ctx context.Context, in *rpc.TaskInfo) (*rpc.WResult, error) {
+	task := *in
+	res := &rpc.WResult{}
+	wr.mux.Lock()
+	old := wr.tasks.Len()
+	wr.tasks.PushBack(task)
+	now := wr.tasks.Len()
+	if now-old == 1 {
+		res.RpcRes = "successful"
+	} else {
+		res.RpcRes = "failed"
+	}
+	wr.mux.Unlock()
+	return res, nil
 }
 
 func readWorkerJson(worker *Worker) {
@@ -145,4 +180,71 @@ func (wr *Worker) Health() bool {
 		return wr.Health()
 	}
 	return true
+}
+
+func (wr *Worker) StartWork() {
+	if wr.Type == "map" {
+		for {
+			if wr.tasks.Len() == 0 {
+				time.Sleep(10 * time.Second)
+				continue
+			}
+			// TODO : 取出task，doMap
+			task := wr.tasks.Front().Value.(rpc.TaskInfo)
+			// Map http://192.168.1.152/bucket/object
+			_, bucket, object := parseS3Url(task.Address)
+			cfg := SimpleStorageService.GetDefaultS3Config()
+			reader, err := SimpleStorageService.DownloadObjectToRAM(bucket, object, cfg.GetDefaultS3Session())
+			if err != nil {
+				// TODO : 下载内容失败
+			}
+			content := readerToStrings(reader)
+			if wr.doMap(task.Bucket, task.Object, *content) == false {
+				fmt.Println("[worker] do map error,time is : ", time.Now().String())
+			}
+		}
+	} else {
+		for {
+			if wr.tasks.Len() == 0 {
+				time.Sleep(10 * time.Second)
+				continue
+			}
+			task := wr.tasks.Front().Value.(rpc.TaskInfo)
+			_, bucket, object := parseS3Url(task.Address)
+			cfg := SimpleStorageService.GetDefaultS3Config()
+			reader, err := SimpleStorageService.DownloadObjectToRAM(bucket, object, cfg.GetDefaultS3Session())
+			if err != nil {
+				// TODO : 下载内容失败
+			}
+			content := readerToStrings(reader)
+			wr.doReduce(*content)
+		}
+
+	}
+
+}
+
+// TODO : parse url http://192.168.1.152/bucket/object --> http://192.168.1.152 bucket object
+func parseS3Url(url string) (ip, bucket, object string) {
+	strs := strings.Split(url, "/")
+	if len(strs) < 2 {
+		return "", "", ""
+	}
+	bucket = strs[len(strs)-2]
+	object = strs[len(strs)-1]
+	for i, it := range url {
+		if it == '/' && i < len(url)-1 && url[i+1] != '/' {
+			break
+		}
+		ip += string(byte(it))
+	}
+	return ip, bucket, object
+}
+
+func readerToStrings(in *io.ReadCloser) *[]string {
+	var buffer []byte
+	(*in).Read(buffer)
+	(*in).Close()
+	str := strings.Split(string(buffer), "\n")
+	return &str
 }

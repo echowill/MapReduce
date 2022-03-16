@@ -14,6 +14,8 @@ message TaskInfo {
     string uuid    = 1;
     string task    = 2; // worker内置任务类型，此处task只做变更处理
     string address = 3;
+    string bucket  = 4;
+    string object  = 5;
 }
 
 message WResult {

@@ -37,7 +37,10 @@ func (wr *Worker) NewContent(bucket, object string) bool {
 }
 
 func (wr *Worker) doMap(bucket, object string, content []string) bool {
-	// TODO: time-service-value
+	/*
+		TODO: 数据格式 time-service-value
+			  1.将整个文件中不符合规则的数据全都去除
+	*/
 	var times, services, values []string
 	for _, it := range content {
 		time, service, value := contentParse(it)
