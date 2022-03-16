@@ -1,6 +1,6 @@
 package main
 
-// TODO : start master
+// TODO : start map worker
 func main() {
 
 }
