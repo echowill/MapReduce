@@ -18,7 +18,7 @@ import (
 */
 func (ms *Master) DispatchTasks(monitorFrequencyMs int64) {
 	for {
-		ms.mux.Lock()
+		ms.Mux.Lock()
 		if ms.MapTasks.Len() != 0 {
 			for _, it := range ms.MapWorker {
 				if it.WorkerState == common.WORKER_IDLE {
@@ -48,7 +48,7 @@ func (ms *Master) DispatchTasks(monitorFrequencyMs int64) {
 				}
 			}
 		}
-		ms.mux.Unlock()
+		ms.Mux.Unlock()
 		time.Sleep(time.Duration(monitorFrequencyMs * 1000))
 	}
 }

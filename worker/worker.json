@@ -1,7 +1,7 @@
 {
-  "MasterIp" : "192.168.1.121:12001",
+  "MasterIp" : "192.168.1.121:10086",
   "TaskThreshold" : 10,
-  "WorkerType": "map",
+  "WorkerType": "reduce",
   "WorkerIp"  : "192.168.1.122",
   "Bucket"    : "map"
 }

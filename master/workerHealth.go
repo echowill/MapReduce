@@ -8,16 +8,16 @@ import (
 /*
 	TODO : 待测试
 */
-func (ms *Master) remakeWorkerState(defaultTimeS int64) {
+func (ms *Master) RemakeWorkerState(defaultTimeS int64) {
 	for {
-		ms.mux.Lock()
+		ms.Mux.Lock()
 		for _, it := range ms.ReduceWorker {
 			it.WorkerState = common.WORKER_UNKNOWN
 		}
 		for _, it := range ms.MapWorker {
 			it.WorkerState = common.WORKER_UNKNOWN
 		}
-		ms.mux.Unlock()
+		ms.Mux.Unlock()
 		time.Sleep(time.Duration(defaultTimeS * 1000 * 1000))
 	}
 }

@@ -128,11 +128,16 @@ func (wr *Worker) WorkerRegister() bool {
 	} else {
 		workInfo.IsMap = false
 	}
+
+	fmt.Printf("[%s worker] INFO: worker server start successful \n", wr.Type)
+
 	r, err := c.WorkerRegister(ctx, workInfo)
 
 	if err != nil {
 		logrus.Error(err)
 		return false
+	} else {
+		fmt.Printf("[%s worker] INFO: worker register successful \n", wr.Type)
 	}
 
 	wr.ID = r.Id
@@ -140,12 +145,16 @@ func (wr *Worker) WorkerRegister() bool {
 }
 
 func (wr *Worker) StartWorkerServer() bool {
-	l, err := net.Listen("tcp", wr.WorkerIp+":0") // port为0时系统会自动分配
+	l, err := net.Listen("tcp", ":0") // port为0时系统会自动分配
 	if err != nil {
 		fmt.Println("err")
 		return false
 	}
-	wr.WorkerIp += ":" + strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
+
+	wr.WorkerIp = l.Addr().(*net.IPNet).String() + ":" + strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
+
+	fmt.Println("[worker] INFO : local worker server addr is ", wr.WorkerIp)
+
 	baseServer := grpc.NewServer()
 	rpc.RegisterWorkerServer(baseServer, wr) // 启动worker server
 	return true
@@ -179,6 +188,7 @@ func (wr *Worker) Health() bool {
 	if r.RpcRes == "WORKER_UNKNOWN" { //如果发现状态被标记成unknown，再次发送健康请求
 		return wr.Health()
 	}
+	fmt.Println("[worker] r.RpcRes is", r.RpcRes)
 	return true
 }
 

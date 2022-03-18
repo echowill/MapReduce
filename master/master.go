@@ -25,23 +25,23 @@ type Master struct {
 	WorkerNums   common.NumControl
 	enoughWorker chan bool
 	crashChan    chan bool
-	mux          sync.Mutex
+	Mux          sync.Mutex
 
-	appIp     string
-	sendToApp map[string][]string // ip,res
+	AppIp     string
+	SendToApp map[string][]string // ip,res
 
 	rpc.UnimplementedMasterServer
 }
 
 func (ms *Master) WaitForEnoughWorker() {
 	for {
-		ms.mux.Lock()
+		ms.Mux.Lock()
 		if ms.WorkerNums.TotalMapNums > ms.WorkerNums.MapMinNums &&
 			ms.WorkerNums.TotalReduceNums > ms.WorkerNums.ReduceMinNums {
 			break
 		}
 		//fmt.Printf("[master] time is %s,map num is %s,reduce num is %s", time.Now().String(), ms.WorkerNums.TotalMapNums, ms.WorkerNums.ReduceMinNums)
-		ms.mux.Unlock()
+		ms.Mux.Unlock()
 		time.Sleep(1000)
 	}
 }
@@ -57,38 +57,38 @@ func (ms *Master) AssignWorks(idleSleepTimeMs int) {
 			var task rpc.TaskInfo
 			if workerType[0] == 'R' { // 如果是reduce类型的worker
 
-				ms.mux.Lock()
+				ms.Mux.Lock()
 				if ms.ReduceTasks.Len() == 0 { //如果此时taskInfo队列空闲
-					ms.mux.Unlock() //先解锁，在跳出本次循环
+					ms.Mux.Unlock() //先解锁，在跳出本次循环
 					continue
 				}
 				task = ms.ReduceTasks.Front().Value.(rpc.TaskInfo)
 				ms.ReduceTasks.Remove(ms.ReduceTasks.Front())
 				delete(ms.WorkQueue, workerType) // 及时从workQueue中移除已经获取到task的worker
-				ms.mux.Unlock()
+				ms.Mux.Unlock()
 
 				go func() {
 					wg.Add(1)
 					rpcRes, err := toWorkerReduce(workerInfo.IP, &task)
 					if err != nil {
 						fmt.Println(rpcRes, err) //TODO : 暂时先打印
-						ms.sendToApp[rpcRes.Ip] = append(ms.sendToApp[rpcRes.Ip], rpcRes.RpcRes)
-						//toAppMRResult("","",rpcRes.RpcRes) //TODO : 发送到app的逻辑
+						ms.SendToApp[rpcRes.Ip] = append(ms.SendToApp[rpcRes.Ip], rpcRes.RpcRes)
+						//ToAppMRResult("","",rpcRes.RpcRes) //TODO : 发送到app的逻辑
 					}
 					wg.Done()
 				}()
 
 			} else {
 				var task rpc.TaskInfo
-				ms.mux.Lock()
+				ms.Mux.Lock()
 				if ms.MapTasks.Len() == 0 {
-					ms.mux.Unlock()
+					ms.Mux.Unlock()
 					continue
 				}
 				task = ms.MapTasks.Front().Value.(rpc.TaskInfo)
 				ms.MapTasks.Remove(ms.MapTasks.Front())
 				delete(ms.WorkQueue, workerType)
-				ms.mux.Unlock()
+				ms.Mux.Unlock()
 
 				go func() {
 					wg.Add(1)
@@ -113,7 +113,7 @@ func (ms *Master) GetMapTaskList() {
 		for _, it := range task.RpcRes {
 			cfg := SimpleStorageService.GetDefaultS3Config()
 			objs := SimpleStorageService.GetObjectList(cfg.GetDefaultS3Session(), it)
-			ms.mux.Lock()
+			ms.Mux.Lock()
 			for _, obj := range objs {
 				mTask := rpc.TaskInfo{
 					Uuid:    uuid.New().String(),
@@ -121,18 +121,21 @@ func (ms *Master) GetMapTaskList() {
 				}
 				ms.MapTasks.PushBack(mTask)
 			}
-			ms.mux.Unlock()
+			ms.Mux.Unlock()
 			// TODO : 何时删除桶内容？等master向app更新最后一个此bucket内的内容时删除
 		}
 	}
 }
 
 func NewMaster(mapNums, reduceNums int) *Master {
+
 	return &Master{
 		WorkerNums: common.NumControl{
 			MapMinNums:    mapNums,
 			ReduceMinNums: reduceNums,
 		},
+		MapWorker:    make(map[string]common.WorkerInfo, 100),
+		ReduceWorker: make(map[string]common.WorkerInfo, 100),
 	}
 }
 

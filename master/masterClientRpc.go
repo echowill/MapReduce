@@ -48,7 +48,7 @@ func toWorkerReduce(workerIp string, task *rpc.TaskInfo) (*rpc.WResult, error) {
 	return r, nil
 }
 
-func toAppMRResult(appIp, srcIp string, res []string) (*rpc.MREmpty, error) {
+func ToAppMRResult(appIp string, res []string) (*rpc.MREmpty, error) {
 	conn, err := grpc.Dial(appIp, grpc.WithInsecure())
 	if err != nil {
 		logrus.Error(err)
@@ -62,7 +62,7 @@ func toAppMRResult(appIp, srcIp string, res []string) (*rpc.MREmpty, error) {
 
 	output := rpc.MRResult{
 		Res:     res,
-		Address: srcIp,
+		Address: "srcIp",
 	}
 
 	r, err := c.MapReduceResult(ctx, &output)

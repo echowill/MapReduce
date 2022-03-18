@@ -43,17 +43,17 @@ func TestMaster(t *testing.T) {
 		wg.Add(1)
 		for {
 			time.Sleep(20 * time.Second) // 每隔20秒发一次结果
-			ms.mux.Lock()
-			for ip, res := range ms.sendToApp {
-				toAppMRResult(ip, "", res)
+			ms.Mux.Lock()
+			for ip, res := range ms.SendToApp {
+				ToAppMRResult(ip, res)
 			}
-			ms.mux.Unlock()
+			ms.Mux.Unlock()
 		}
 		wg.Done()
 	}()
 	go func() {
 		wg.Add(1)
-		ms.remakeWorkerState(100) // 每隔100秒重写一次worker状态为unknown
+		ms.RemakeWorkerState(100) // 每隔100秒重写一次worker状态为unknown
 		wg.Done()
 	}()
 	wg.Wait()
