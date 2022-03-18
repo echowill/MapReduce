@@ -38,7 +38,7 @@ type Worker struct {
 	Type          string `json:"WorkerType"`
 	TaskThreshold int    `json:"TaskThreshold"`
 	MasterIp      string `json:"MasterIp"`
-	WorkerIp      string `json:"WorkerIp"`
+	Port          string `json:"Port"`
 	mux           sync.Mutex
 	tasks         list.List
 	dataCache     []string
@@ -114,14 +114,14 @@ func (wr *Worker) WorkerRegister() bool {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 	defer cancel()
-	// 已解决 TODO : 要先启动本机的WorkerServer
+	// 已解决 TO DO : 要先启动本机的WorkerServer
 	if wr.StartWorkerServer() == false {
 		fmt.Println("start worker server error")
 		return false
 	}
 	workInfo := &rpc.WorkerInfo{
 		Uuid: wr.UUID,
-		Ip:   wr.WorkerIp,
+		Port: wr.Port,
 	}
 	if wr.Type == "map" { // 已确认，master大小写无关,worker json为map(小写) TODO:确认map是全小写还是Map
 		workInfo.IsMap = true
@@ -151,12 +151,15 @@ func (wr *Worker) StartWorkerServer() bool {
 		return false
 	}
 
-	wr.WorkerIp = l.Addr().(*net.IPNet).String() + ":" + strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
+	wr.Port = strconv.Itoa(l.Addr().(*net.TCPAddr).Port) // 获取到worker服务器到port，ip由master client发送
 
-	fmt.Println("[worker] INFO : local worker server addr is ", wr.WorkerIp)
+	fmt.Println("[worker] INFO : local worker server Port is ", wr.Port)
 
 	baseServer := grpc.NewServer()
 	rpc.RegisterWorkerServer(baseServer, wr) // 启动worker server
+
+	go baseServer.Serve(l)
+
 	return true
 }
 
@@ -186,9 +189,10 @@ func (wr *Worker) Health() bool {
 		return false
 	}
 	if r.RpcRes == "WORKER_UNKNOWN" { //如果发现状态被标记成unknown，再次发送健康请求
+		fmt.Println("[worker] Rpc.Res is", r.RpcRes)
 		return wr.Health()
 	}
-	fmt.Println("[worker] r.RpcRes is", r.RpcRes)
+	fmt.Println("[worker] Rpc.Res is", r.RpcRes)
 	return true
 }
 

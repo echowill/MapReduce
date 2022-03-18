@@ -2,22 +2,26 @@ package master
 
 import (
 	"MapReduce/common"
+	"fmt"
 	"time"
 )
 
-/*
-	TODO : 待测试
-*/
 func (ms *Master) RemakeWorkerState(defaultTimeS int64) {
+	fmt.Println("[master] remake start,", time.Now().String())
 	for {
+
 		ms.Mux.Lock()
-		for _, it := range ms.ReduceWorker {
+		for i, it := range ms.ReduceWorker {
 			it.WorkerState = common.WORKER_UNKNOWN
+			ms.ReduceWorker[i] = it
 		}
-		for _, it := range ms.MapWorker {
+
+		for i, it := range ms.MapWorker {
 			it.WorkerState = common.WORKER_UNKNOWN
+			ms.MapWorker[i] = it
 		}
 		ms.Mux.Unlock()
-		time.Sleep(time.Duration(defaultTimeS * 1000 * 1000))
+		fmt.Println("[master] remake worker state,", time.Now().String())
+		time.Sleep(time.Duration(defaultTimeS * 1000 * 1000 * 1000))
 	}
 }

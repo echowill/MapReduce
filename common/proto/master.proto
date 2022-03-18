@@ -24,7 +24,7 @@ message Result {
 
 message WorkerInfo {
     string uuid  = 1;
-    string ip    = 2;
+    string port  = 2;
     bool   isMap = 3;
 }
 

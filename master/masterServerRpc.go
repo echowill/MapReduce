@@ -6,28 +6,32 @@ import (
 	"context"
 	"fmt"
 	"github.com/google/uuid"
+	"google.golang.org/grpc/peer"
 	"strconv"
+	"strings"
 )
 
 // WorkerRegister : register worker is map worker
 func (ms *Master) WorkerRegister(ctx context.Context, in *rpc.WorkerInfo) (*rpc.RegisterResult, error) {
-	fmt.Println("[Master] worker register start")
+	addr, _ := peer.FromContext(ctx)
+	ipv4 := strings.Split(addr.Addr.String(), ":")
+
 	var num int
+	// ip由master client自带，in.ip其实是worker server的port
 	ms.Mux.Lock()
 	if in.IsMap == true { // true is map worker
-		fmt.Printf("[master] INFO : worker uuid is %s,ip is %s \n", in.Uuid, in.Ip)
-
-		ms.MapWorker[in.Uuid] = NewWorker(in.Uuid, in.Ip)
+		ms.MapWorker[in.Uuid] = NewWorker(in.Uuid, ipv4[0]+in.Port)
 		ms.WorkerNums.TotalMapNums++
 		num = ms.WorkerNums.TotalMapNums
-		fmt.Printf("[master] INFO : worker %s add successful\n", in.Uuid)
 	} else {
-		ms.ReduceWorker[in.Uuid] = NewWorker(in.Uuid, in.Ip)
+		ms.ReduceWorker[in.Uuid] = NewWorker(in.Uuid, ipv4[0]+in.Port)
 		ms.WorkerNums.TotalReduceNums++
 		num = ms.WorkerNums.TotalReduceNums + 0x80000000
 	}
 	ms.Mux.Unlock()
-	fmt.Println("[Master] worker register success")
+
+	fmt.Printf("[master] INFO : worker %s add successful,worker server ip is %s:%s\n", in.Uuid, ipv4[0], in.Port)
+
 	return &rpc.RegisterResult{
 		Result: true,
 		Id:     int64(num - 1),
@@ -135,6 +139,6 @@ func (ms *Master) Health(ctx context.Context, in *rpc.WorkerState) (*rpc.Empty, 
 		}
 	}
 	ms.Mux.Unlock()
-	fmt.Println("[master] Rpc.Res is ", empty.RpcRes)
+	fmt.Println("[master] Rpc.Res is", empty.RpcRes)
 	return empty, nil
 }
