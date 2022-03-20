@@ -6,7 +6,7 @@ import (
 )
 
 /*
-	TODO: 1. 新建worker 			√
+	TO DO:1. 新建worker 			√
 		  2. 启动WorkerServer	√
 		  3. 向Master注册自身 	√
 		  4. 运行任务处理函数 		√

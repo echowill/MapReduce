@@ -1,0 +1,7 @@
+{
+  "Endpoint":"192.168.1.152:7480",
+  "AccessKey": "echo",
+  "SecretKey": "echo",
+  "DisableSSL": true,
+  "S3ForcePathStyle": true
+}

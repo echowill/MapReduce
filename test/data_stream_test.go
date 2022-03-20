@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestKeepAlive(t *testing.T) {
+func TestDataStream(t *testing.T) {
 	var wg sync.WaitGroup
 	go func() {
 		wg.Add(1)

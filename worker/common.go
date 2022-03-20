@@ -79,13 +79,14 @@ func (wr *Worker) Reduce(ctx context.Context, in *rpc.TaskInfo) (*rpc.WResult, e
 	return res, nil
 }
 
-func readWorkerJson(worker *Worker) {
+func readWorkerJson(worker *Worker, workerType string) {
 	data, err := ioutil.ReadFile("./worker.json")
 	if err != nil {
 		fmt.Println("Read json failed,error code is ", err)
 		panic(err)
 	}
 	err = json.Unmarshal(data, worker)
+	worker.Type = workerType
 	if err != nil {
 		fmt.Println("Parse Json failed,error code is ", err)
 		panic(err)
@@ -99,7 +100,7 @@ func NewWorker(workerType string) *Worker {
 		UUID:  uuid.New().String(),
 		state: int32(common.WORKER_IDLE),
 	}
-	readWorkerJson(worker)
+	readWorkerJson(worker, workerType)
 	return worker
 }
 
@@ -197,6 +198,7 @@ func (wr *Worker) Health() bool {
 }
 
 func (wr *Worker) StartWork() {
+	fmt.Println("[worker] INFO : start work !")
 	if wr.Type == "map" {
 		for {
 			if wr.tasks.Len() == 0 {
@@ -205,8 +207,15 @@ func (wr *Worker) StartWork() {
 			}
 			// TODO : 取出task，doMap
 			task := wr.tasks.Front().Value.(rpc.TaskInfo)
+			fmt.Println("[worker] INFO : the task content is", task.Address, task.Bucket, task.Object)
 			// Map http://192.168.1.152/bucket/object
+
 			_, bucket, object := parseS3Url(task.Address)
+			// FIXME : 这里不记得之前有没有写入这俩个对象了
+			if task.Object != "" {
+				bucket = task.Bucket
+				object = task.Object
+			}
 			cfg := SimpleStorageService.GetDefaultS3Config()
 			reader, err := SimpleStorageService.DownloadObjectToRAM(bucket, object, cfg.GetDefaultS3Session())
 			if err != nil {
@@ -225,6 +234,12 @@ func (wr *Worker) StartWork() {
 			}
 			task := wr.tasks.Front().Value.(rpc.TaskInfo)
 			_, bucket, object := parseS3Url(task.Address)
+			// FIXME : 这里不记得之前有没有写入这俩个对象了
+			if task.Object != "" {
+				bucket = task.Bucket
+				object = task.Object
+			}
+			fmt.Println("[worker] INFO : the task content is", task.Address, task.Bucket, task.Object)
 			cfg := SimpleStorageService.GetDefaultS3Config()
 			reader, err := SimpleStorageService.DownloadObjectToRAM(bucket, object, cfg.GetDefaultS3Session())
 			if err != nil {

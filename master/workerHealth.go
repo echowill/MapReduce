@@ -21,6 +21,7 @@ func (ms *Master) RemakeWorkerState(defaultTimeS int64) {
 			ms.MapWorker[i] = it
 		}
 		ms.Mux.Unlock()
+
 		fmt.Println("[master] remake worker state,", time.Now().String())
 		time.Sleep(time.Duration(defaultTimeS * 1000 * 1000 * 1000))
 	}

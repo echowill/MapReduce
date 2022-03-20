@@ -105,13 +105,14 @@ func (ms *Master) Reduce(ctx context.Context, in *rpc.ReduceResult) (*rpc.Empty,
 	out = append(out, "start : "+in.StartTime)
 	out = append(out, "end : "+in.EndTime)
 	out = append(out, "variance : "+strconv.FormatFloat(float64(in.Variance), 'f', 6, 64))
-	ToAppMRResult(ms.AppIp, out) // 更新到app,此时reduce会等着master将结果写入app才会返回
-	// 暂时不更新此 TODO : 结果更新到s3 指定bucket,
+	// TODO : 更新到bucket，通知APP已经更新，暂时先print
+	//ToAppMRResult(ms.AppIp, out) // 更新到app,此时reduce会等着master将结果写入app才会返回
+	fmt.Println("[master] DATA : ", out)
 	return empty, nil
 }
 
 /*
-	TODO : 待测试
+	已测试 TO DO : 待测试
 */
 func (ms *Master) Health(ctx context.Context, in *rpc.WorkerState) (*rpc.Empty, error) {
 	empty := &rpc.Empty{

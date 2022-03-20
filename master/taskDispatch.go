@@ -9,13 +9,15 @@ import (
 
 /*
 	弃用，改用AssignWorks
-	TaskDispatch TODO : Map任务列表非空且map worker列表存在空闲worker时，会触发map任务派发，reduce同理
+	 TO DO :     Map任务列表非空且map worker列表存在空闲worker时，会触发map任务派发，reduce同理
 				 1. 需要定期检测task列表以及worker列表		ok
   				 2. 向worker派发任务 						ok
 				 3. 暂定一个worker一次派发一个任务			ok
 				 4. 任务发出去后需要及时从任务列队中清除		ok
 				 5. 设置worker权重,采用轮询派发的模式
+				 FIXME NOTE BUG XXX HACK
 */
+//Deprecated
 func (ms *Master) DispatchTasks(monitorFrequencyMs int64) {
 	for {
 		ms.Mux.Lock()
