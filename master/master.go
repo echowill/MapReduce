@@ -61,6 +61,9 @@ func (ms *Master) AssignWorks(idleSleepTimeMs int) {
 		// TODO : 如何task失败记得把任务加回到tasks尾部
 		for _, workerInfo := range ms.MapWorker {
 			if workerInfo.WorkerState == common.WORKER_IDLE {
+				if ms.MapTasks.Len() == 0 {
+					break
+				}
 				ms.Mux.Lock()
 				task := ms.MapTasks.Front().Value.(rpc.TaskInfo)
 				ms.MapTasks.Remove(ms.MapTasks.Front())
@@ -81,6 +84,9 @@ func (ms *Master) AssignWorks(idleSleepTimeMs int) {
 
 		for _, workerInfo := range ms.ReduceWorker {
 			if workerInfo.WorkerState == common.WORKER_IDLE {
+				if ms.ReduceTasks.Len() == 0 {
+					break
+				}
 				ms.Mux.Lock()
 				task := ms.ReduceTasks.Front().Value.(rpc.TaskInfo)
 				ms.ReduceTasks.Remove(ms.ReduceTasks.Front())
